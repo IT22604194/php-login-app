@@ -4,7 +4,7 @@ ini_set('display_errors', 1);
 include 'config.php';
 date_default_timezone_set('Asia/Colombo');
 
-$conn = new mysqli($host, $user, $pass, $db);
+$conn = new mysqli($host, $user, $pass, $db, $port);
 
 if ($conn->connect_error) {
     http_response_code(500);
