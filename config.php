@@ -1,7 +1,7 @@
 <?php 
-$host = "caboose.proxy.rlwy.net";
-$port = 45752;
+$host = "interchange.proxy.rlwy.net";
+$port = 22414;
 $user = "root";
-$pass = "ilvUvnVtsolajKTrBCZIDaVNOPlDWTNa"; 
+$pass = "FFWHLkjqTprqhNOGRoEBzIvhyIkWXJTb"; 
 $db   = "railway";
 ?>
