@@ -25,7 +25,7 @@ if (!is_numeric($latitude) || !is_numeric($longitude) || empty($rep_id)) {
     exit;
 }
 
-$timestamp = date('Y-m-d H:i:s');
+
 
 if ($action === 'clock_out') {
     // Clock Out updates the most recent clock_in record
