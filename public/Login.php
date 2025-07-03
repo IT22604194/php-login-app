@@ -1,5 +1,6 @@
 <?php
 header("Access-Control-Allow-Origin: *");
+header("Content-Type: application/json");
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
@@ -7,10 +8,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     http_response_code(200);
     exit();
 }
+
 include 'config.php';
 
 $conn = new mysqli($host, $user, $pass, $db, $port);
-if ($conn->connect_error) die("Connection failed: " . $conn->connect_error);
+if ($conn->connect_error) {
+    echo json_encode(['success' => false, 'message' => 'Connection failed: ' . $conn->connect_error]);
+    exit();
+}
 
 if (isset($_POST['username'], $_POST['password'])) {
     $username = $_POST['username'];
@@ -22,24 +27,21 @@ if (isset($_POST['username'], $_POST['password'])) {
     $stmt->store_result();
 
     if ($stmt->num_rows == 1) {
-    $stmt->bind_result($hashedPassword);
-    $stmt->fetch();
+        $stmt->bind_result($hashedPassword);
+        $stmt->fetch();
 
-    // Print the stored hashed password to debug
-    echo "Stored hash: " . $hashedPassword . "\n";
-
-    if (password_verify($password, $hashedPassword)) {
-        echo "Login successful";
+        if (password_verify($password, $hashedPassword)) {
+            echo json_encode(['success' => true, 'message' => 'Login successful']);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Invalid password']);
+        }
     } else {
-        echo "Invalid password";
-    }
-}
- else {
-        echo "User not found";
+        echo json_encode(['success' => false, 'message' => 'User not found']);
     }
     $stmt->close();
 } else {
-    echo "Missing username or password";
+    echo json_encode(['success' => false, 'message' => 'Missing username or password']);
 }
+
 $conn->close();
 ?>
