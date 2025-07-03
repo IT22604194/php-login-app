@@ -10,6 +10,8 @@ if ($conn->connect_error) {
     http_response_code(500);
     die("Connection failed: " . $conn->connect_error);
 }
+$conn->query("SET time_zone = '+05:30'");
+
 
 $rep_id = $_POST['rep_id'] ?? '';
 $latitude = $_POST['latitude'] ?? '';
