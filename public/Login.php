@@ -22,15 +22,19 @@ if (isset($_POST['username'], $_POST['password'])) {
     $stmt->store_result();
 
     if ($stmt->num_rows == 1) {
-        $stmt->bind_result($hashedPassword);
-        $stmt->fetch();
+    $stmt->bind_result($hashedPassword);
+    $stmt->fetch();
 
-        if (password_verify($password, $hashedPassword)) {
-            echo "Login successful";
-        } else {
-            echo "Invalid password";
-        }
+    // Print the stored hashed password to debug
+    echo "Stored hash: " . $hashedPassword . "\n";
+
+    if (password_verify($password, $hashedPassword)) {
+        echo "Login successful";
     } else {
+        echo "Invalid password";
+    }
+}
+ else {
         echo "User not found";
     }
     $stmt->close();
