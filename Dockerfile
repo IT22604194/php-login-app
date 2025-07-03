@@ -1,7 +1,10 @@
 FROM php:8.2-apache
 
-# Enable mod_rewrite for clean URLs
-RUN a2enmod rewrite
+# Enable mod_rewrite and install mysqli
+RUN apt-get update && apt-get install -y \
+    libzip-dev zip unzip && \
+    docker-php-ext-install mysqli && \
+    a2enmod rewrite
 
 # Copy project files
 COPY ./public/ /var/www/html/
