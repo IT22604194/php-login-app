@@ -3,9 +3,8 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 include 'config.php';
 
-// Set timezone first
+// Set timezone once
 date_default_timezone_set('Asia/Colombo');
-$timestamp = date('Y-m-d H:i:s');  // Generate timestamp right after setting timezone
 
 $conn = new mysqli($host, $user, $pass, $db, $port);
 if ($conn->connect_error) {
@@ -13,6 +12,7 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
+// Optional, sets session time zone for MySQL connection
 $conn->query("SET time_zone = '+05:30'");
 
 $rep_id = $_POST['rep_id'] ?? '';
@@ -28,6 +28,8 @@ if (!is_numeric($latitude) || !is_numeric($longitude) || empty($rep_id)) {
 }
 
 if ($action === 'clock_out') {
+    $timestamp = date('Y-m-d H:i:s');  // Generate time for clock out
+
     $sql = "UPDATE locations 
             SET clock_out_latitude = ?, clock_out_longitude = ?, clock_out_timestamp = ?
             WHERE rep_id = ?
@@ -48,6 +50,8 @@ if ($action === 'clock_out') {
     $stmt->close();
 
 } elseif ($action === 'location_update') {
+    $timestamp = date('Y-m-d H:i:s');  // Fresh time for location update
+
     $sql = "INSERT INTO location_logs (rep_id, latitude, longitude, timestamp) VALUES (?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("sdds", $rep_id, $latitude, $longitude, $timestamp);
@@ -63,6 +67,8 @@ if ($action === 'clock_out') {
     $stmt->close();
 
 } else {
+    $timestamp = date('Y-m-d H:i:s');  // Time for clock in
+
     $sql = "INSERT INTO locations (rep_id, latitude, longitude, timestamp) VALUES (?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("sdds", $rep_id, $latitude, $longitude, $timestamp);
