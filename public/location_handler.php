@@ -6,13 +6,13 @@ include 'config.php';
 // Set timezone once
 date_default_timezone_set('Asia/Colombo');
 
-$conn = new mysqli($host, $user, $pass, $db, $port);
+$conn = new mysqli($host, $user, $pass, $db);
 if ($conn->connect_error) {
     http_response_code(500);
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Optional, sets session time zone for MySQL connection
+// Optional: set session time zone for MySQL connection
 $conn->query("SET time_zone = '+05:30'");
 
 $rep_id = $_POST['rep_id'] ?? '';
@@ -28,7 +28,7 @@ if (!is_numeric($latitude) || !is_numeric($longitude) || empty($rep_id)) {
 }
 
 if ($action === 'clock_out') {
-    $timestamp = date('Y-m-d H:i:s');  // Generate time for clock out
+    $timestamp = date('Y-m-d H:i:s');
 
     $sql = "UPDATE locations 
             SET clock_out_latitude = ?, clock_out_longitude = ?, clock_out_timestamp = ?
@@ -50,24 +50,41 @@ if ($action === 'clock_out') {
     $stmt->close();
 
 } elseif ($action === 'location_update') {
-    $timestamp = date('Y-m-d H:i:s');  // Fresh time for location update
+    $timestamp = date('Y-m-d H:i:s');
 
-    $sql = "INSERT INTO location_logs (rep_id, latitude, longitude, timestamp) VALUES (?, ?, ?, ?)";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("sdds", $rep_id, $latitude, $longitude, $timestamp);
+    // Check for recent duplicate within 30 seconds
+    $checkSql = "SELECT id FROM location_logs 
+                 WHERE rep_id = ? AND latitude = ? AND longitude = ?
+                 AND timestamp > DATE_SUB(NOW(), INTERVAL 30 SECOND)";
+    $checkStmt = $conn->prepare($checkSql);
+    $checkStmt->bind_param("sdd", $rep_id, $latitude, $longitude);
+    $checkStmt->execute();
+    $checkStmt->store_result();
 
-    if ($stmt->execute()) {
-        http_response_code(200);
-        echo "Location saved.";
+    if ($checkStmt->num_rows === 0) {
+        // Not duplicate: insert new location
+        $insertSql = "INSERT INTO location_logs (rep_id, latitude, longitude, timestamp) VALUES (?, ?, ?, ?)";
+        $insertStmt = $conn->prepare($insertSql);
+        $insertStmt->bind_param("sdds", $rep_id, $latitude, $longitude, $timestamp);
+
+        if ($insertStmt->execute()) {
+            http_response_code(200);
+            echo "Location saved.";
+        } else {
+            http_response_code(500);
+            echo "Error: " . $insertStmt->error;
+        }
+
+        $insertStmt->close();
     } else {
-        http_response_code(500);
-        echo "Error: " . $stmt->error;
+        http_response_code(200);
+        echo "Duplicate location skipped.";
     }
 
-    $stmt->close();
+    $checkStmt->close();
 
 } else {
-    $timestamp = date('Y-m-d H:i:s');  // Time for clock in
+    $timestamp = date('Y-m-d H:i:s');
 
     $sql = "INSERT INTO locations (rep_id, latitude, longitude, timestamp) VALUES (?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);
