@@ -19,6 +19,7 @@ $rep_id = $_POST['rep_id'] ?? '';
 $latitude = $_POST['latitude'] ?? '';
 $longitude = $_POST['longitude'] ?? '';
 $action = $_POST['action'] ?? 'clock_in';
+$battery_level = $_POST['battery_level'] ?? null;
 
 if (!is_numeric($latitude) || !is_numeric($longitude) || empty($rep_id)) {
     http_response_code(400);
@@ -63,9 +64,9 @@ if ($action === 'clock_out') {
 
     if ($checkStmt->num_rows === 0) {
         // Not duplicate: insert new location
-        $insertSql = "INSERT INTO location_logs (rep_id, latitude, longitude, timestamp) VALUES (?, ?, ?, ?)";
+        $insertSql = "INSERT INTO location_logs (rep_id, latitude, longitude, timestamp,battery_level) VALUES (?, ?, ?, ?,?)";
         $insertStmt = $conn->prepare($insertSql);
-        $insertStmt->bind_param("sdds", $rep_id, $latitude, $longitude, $timestamp);
+        $insertStmt->bind_param("sddsi", $rep_id, $latitude, $longitude, $timestamp,$battery_level);
 
         if ($insertStmt->execute()) {
             http_response_code(200);

@@ -52,6 +52,7 @@ $end_date = $_GET['end_date'] ?? '';
 
     <button type="submit">Filter</button>
 </form>
+<a href="map_view.php" target="_blank">View on Map</a>
 
 <table>
     <tr>
@@ -59,10 +60,11 @@ $end_date = $_GET['end_date'] ?? '';
         <th>Latitude</th>
         <th>Longitude</th>
         <th>Timestamp</th>
+        <th>battery_level</th>
     </tr>
 
     <?php
-    $sql = "SELECT rep_id, latitude, longitude, timestamp FROM location_logs WHERE 1=1";
+    $sql = "SELECT rep_id, latitude, longitude, timestamp,battery_level FROM location_logs WHERE 1=1";
     $params = [];
     $types = '';
 
@@ -100,6 +102,7 @@ $end_date = $_GET['end_date'] ?? '';
                 <td>{$row['latitude']}</td>
                 <td>{$row['longitude']}</td>
                 <td>{$row['timestamp']}</td>
+                <td>{$row['battery_level']}</td>
             </tr>";
         }
     } else {
